@@ -120,7 +120,10 @@
     background:var(--field-bg); border:none; color:var(--sub);
     cursor:pointer; font-size:16px; font-weight:700;
   }
-  .item .a{ font-size:14px; color:var(--sub); line-height:1.55; margin-top:4px; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .item .a{
+    font-size:14px; color:#3a3a3c; line-height:1.6; margin-top:8px; white-space:pre-wrap; overflow-wrap:anywhere;
+    background:#f3f4f8; border-radius:12px; padding:10px 12px;
+  }
   .item .kws{ display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
   .item .kw{ font-size:11px; font-weight:700; color:var(--blue-deep); background:var(--blue-tint); padding:3px 9px; border-radius:20px; }
   .item .foot{ display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-top:8px; }
@@ -1286,7 +1289,7 @@ function render(){
           <div class="q">Q. ${escapeHTML(e.question)}</div>
           <button class="more" data-more="${escapeHTML(e.id)}" aria-label="수정 또는 삭제">⋯</button>
         </div>
-        <div class="a">A. ${escapeHTML(e.answer)}</div>
+        <div class="a">${escapeHTML(e.answer)}</div>
         ${kws.length ? `<div class="kws">${kws.map(k=>`<span class="kw">#${escapeHTML(k)}</span>`).join('')}</div>` : ''}
         <div class="foot">
           <div class="meta">${created}${edited}</div>
