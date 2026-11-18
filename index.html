@@ -244,6 +244,16 @@
   .guidenote{ margin:0 16px 16px; padding:12px 14px; border-radius:14px; background:var(--field-bg); font-size:12.5px; line-height:1.6; color:var(--sub); }
   .guidenote b{ color:var(--ink); }
 
+  /* ── 목록 도구줄 (개수 · 정렬) ── */
+  .listbar{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:2px 18px 0; }
+  .listbar .count{ font-size:12px; color:var(--tert); white-space:nowrap; padding-left:4px; }
+  .sortwrap{ position:relative; display:inline-flex; align-items:center; }
+  .sortwrap select{
+    appearance:none; -webkit-appearance:none; border:none; background:var(--card); box-shadow:var(--shadow);
+    color:var(--ink); font:inherit; font-size:12.5px; font-weight:700; padding:7px 28px 7px 12px; border-radius:999px; cursor:pointer;
+  }
+  .sortwrap::after{ content:''; position:absolute; right:12px; top:50%; width:6px; height:6px; margin-top:-5px; border-right:1.6px solid var(--sub); border-bottom:1.6px solid var(--sub); transform:rotate(45deg); pointer-events:none; }
+
   /* ── 사용방법 ── */
   .help h3{ font-size:15px; font-weight:800; margin:0 0 4px; }
   .help .lead{ font-size:12.5px; color:var(--sub); margin:0 0 6px; line-height:1.55; }
@@ -332,8 +342,19 @@
   <div class="searchwrap">
     <div class="searchbox">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="#8E8E93" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="#8E8E93" stroke-width="2" stroke-linecap="round"/></svg>
-      <input id="searchInput" placeholder="질문, 답변, 검색어로 찾기" oninput="render()" aria-label="검색">
+      <input id="searchInput" placeholder="질문, 답변, 검색어로 찾기" oninput="render()" aria-label="검색" autocomplete="off">
     </div>
+  </div>
+  <div class="listbar">
+    <span class="count" id="listCount"></span>
+    <label class="sortwrap" title="정렬">
+      <select id="sortSelect" onchange="setSort(this.value)" aria-label="정렬" autocomplete="off">
+        <option value="created">최신 등록순</option>
+        <option value="updated">최신 수정순</option>
+        <option value="author">작성자순 (가나다)</option>
+        <option value="question">질문순 (가나다)</option>
+      </select>
+    </label>
   </div>
   <div class="list" id="list"></div>
 </main>
@@ -497,6 +518,7 @@ K: 검색어1, 검색어2   ← 생략해도 돼요</div>
     <h3>찾기 · 복사 · 수정</h3>
     <ul class="catlist">
       <li><div><b>찾기</b><span class="d">검색창에 단어를 입력하면 질문, 답변, 검색어에서 함께 찾아요. 여러 단어는 쉼표나 띄어쓰기로 구분하면 모두 포함된 FAQ만 보여요. 위쪽 분류 카드를 누르면 해당 분류만 볼 수 있어요.</span></div></li>
+      <li><div><b>정렬</b><span class="d">검색창 아래 오른쪽에서 최신 등록순, 최신 수정순, 작성자순, 질문순으로 바꿀 수 있어요. 분류별 묶음 안에서 정렬되고, 고른 정렬은 다음에 열어도 그대로예요.</span></div></li>
       <li><div><b>답변 복사</b><span class="d">각 FAQ의 [답변 복사]를 누르면 답변이 클립보드에 복사돼요. 메일이나 메신저에 바로 붙여넣을 수 있어요.</span></div></li>
       <li><div><b>수정 · 삭제</b><span class="d">각 FAQ의 ⋯ 버튼을 눌러요. 수정하면 수정자와 수정 일시가 함께 표시돼요. 다른 팀원이 먼저 고친 경우에는 최신 내용을 보여드려요.</span></div></li>
       <li><div><b>내보내기</b><span class="d">[PDF로 내보내기]는 인쇄 창에서 대상을 ‘PDF로 저장’으로 바꿔 저장해요. [DOCX로 내보내기]는 워드 파일이 바로 내려받아져요.</span></div></li>
@@ -1015,6 +1037,7 @@ let editingId = null;
 let editingBase = 0;       // 수정 시작 시점의 수정일 (충돌 확인용)
 let pendingAddId = null;   // 재시도해도 중복 저장되지 않도록 미리 정한 ID
 let bulkSession = null;
+let sortMode = loadJSON('kyobo_faq_sort_v1', 'created');
 
 function isConnected(){ return !!(conn && conn.url && conn.key); }
 function persistLocal(){ if(!isConnected()) saveJSON(STORE_KEY, entries); }
@@ -1213,7 +1236,9 @@ function render(){
     if(!terms.length) return true;
     const hay = [e.question, e.answer, e.keywords, catInfo(e.category).label, e.createdBy, e.updatedBy].join(' ').toLowerCase();
     return terms.every(t=>hay.includes(t));
-  }).sort((a,b)=> b.createdAt - a.createdAt);
+  }).sort(SORTERS[sortMode] || SORTERS.created);
+  document.getElementById('listCount').textContent = `FAQ ${filtered.length}개`;
+  document.getElementById('sortSelect').value = SORTERS[sortMode] ? sortMode : 'created';
 
   const list = document.getElementById('list');
   list.innerHTML = '';
@@ -1277,6 +1302,24 @@ async function copyAnswer(btn){
   btn.classList.add('done');
   btn.textContent = '복사됨 ✓';
   setTimeout(()=>{ btn.classList.remove('done'); btn.textContent = '답변 복사'; }, 1500);
+}
+
+/* ───────── 정렬 ───────── */
+const byNewest = (a,b)=> b.createdAt - a.createdAt;
+const SORTERS = {
+  created: byNewest,
+  updated: (a,b)=> (b.updatedAt || b.createdAt) - (a.updatedAt || a.createdAt),
+  author: (a,b)=>{
+    // 작성자 이름 가나다순, 이름 없는 FAQ는 맨 뒤
+    if(!a.createdBy !== !b.createdBy) return a.createdBy ? -1 : 1;
+    return (a.createdBy || '').localeCompare(b.createdBy || '', 'ko') || byNewest(a,b);
+  },
+  question: (a,b)=> a.question.localeCompare(b.question, 'ko', { numeric:true }) || byNewest(a,b),
+};
+function setSort(v){
+  sortMode = SORTERS[v] ? v : 'created';
+  saveJSON('kyobo_faq_sort_v1', sortMode);
+  render();
 }
 
 /* ───────── 추가·수정 시트 ───────── */
