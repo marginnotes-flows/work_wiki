@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💾 업무 FAQ </title>
+<title>업무 FAQ 관리</title>
 <script src="https://unpkg.com/docx@9.7.1/dist/index.iife.js"></script>
 <style>
   :root{
@@ -313,14 +313,14 @@
 <header class="topbar">
   <div class="wrap">
     <div class="titlerow">
-      <h1>출판사 FAQ</h1>
+      <h1>💾 업무 FAQ</h1>
       <button class="syncpill" id="syncPill" onclick="openSettings()"><span class="dot"></span><span id="syncText">이 브라우저에만 저장 중</span></button>
     </div>
     <p class="sub">자주 쓰는 답변을 쌓아두고, 필요할 때 편리하게 사용해요!</p>
     <div class="toolbtns">
       <button class="pillbtn" onclick="openHelp()">사용방법</button>
-      <button class="pillbtn" onclick="exportPDF()" aria-label="PDF로 내보내기">PDF<span class="long">로 내보내기</span></button>
-      <button class="pillbtn" onclick="exportDOCX()" aria-label="DOCX로 내보내기">DOCX<span class="long">로 내보내기</span></button>
+      <button class="pillbtn" onclick="exportPDF()" aria-label="PDF로 내보내기"><span>PDF<span class="long">로 내보내기</span></span></button>
+      <button class="pillbtn" onclick="exportDOCX()" aria-label="DOCX로 내보내기"><span>DOCX<span class="long">로 내보내기</span></span></button>
       <button class="pillbtn icon" id="refreshBtn" onclick="refresh()" title="시트에서 최신 내용 불러오기" aria-label="새로고침" hidden><span>↻</span></button>
       <button class="pillbtn icon" onclick="openMoreMenu()" title="더보기" aria-label="더보기">⋯</button>
     </div>
@@ -521,7 +521,7 @@ K: 검색어1, 검색어2   ← 생략해도 돼요</div>
 
 <script type="text/plain" id="gsSource">
 /**
- * 출판사 FAQ 관리도구 · 구글시트 연동 코드 (v2)
+ * 업무 FAQ 관리도구 · 구글시트 연동 코드 (v2)
  *
  * 설치 순서 (처음 한 번만)
  *  1. 아래 ACCESS_KEY 값을 팀에서 쓸 접속 키로 바꾸고 저장해요. (예: 'kyobo-faq-2026')
@@ -1632,7 +1632,7 @@ async function uploadLocal(){
 }
 
 function inviteText(){
-  return `[출판사 FAQ 관리도구 연결 정보]\n웹 앱 주소: ${conn.url}\n접속 키: ${conn.key}\n\n전달드린 FAQ 관리도구 HTML 파일을 브라우저로 연 뒤, 오른쪽 위 연결 상태 버튼(또는 ⋯ → 구글시트 연결하기)을 눌러 위 두 가지와 본인 이름을 입력해 주세요.`;
+  return `[업무 FAQ 관리도구 연결 정보]\n웹 앱 주소: ${conn.url}\n접속 키: ${conn.key}\n\n전달드린 FAQ 관리도구 HTML 파일을 브라우저로 연 뒤, 오른쪽 위 연결 상태 버튼(또는 ⋯ → 구글시트 연결하기)을 눌러 위 두 가지와 본인 이름을 입력해 주세요.`;
 }
 function copyInvite(){ if(isConnected()) copyText(inviteText(), '팀원용 연결 정보를 복사했어요'); }
 
@@ -1750,7 +1750,7 @@ function exportMeta(e){
 function exportPDF(){
   const area = document.getElementById('printArea');
   const now = new Date();
-  let html = `<div class="ptitle">출판사 FAQ 모음집</div><div class="pmetaline">교보문고 · 생성일 ${fmtDate(now.getTime())} · 총 ${entries.length}건</div>`;
+  let html = `<div class="ptitle">업무 FAQ 모음집</div><div class="pmetaline">교보문고 · 생성일 ${fmtDate(now.getTime())} · 총 ${entries.length}건</div>`;
 
   html += `<div class="psummary">`;
   CATS.forEach(c=>{
@@ -1814,7 +1814,7 @@ async function exportDOCX(){
   }
 
   const children = [];
-  children.push(new Paragraph({ children:[ new TextRun({ text:'출판사 FAQ 모음집', bold:true, size:44, color:'1C1C1E' }) ], spacing:{ after:60 } }));
+  children.push(new Paragraph({ children:[ new TextRun({ text:'업무 FAQ 모음집', bold:true, size:44, color:'1C1C1E' }) ], spacing:{ after:60 } }));
   children.push(new Paragraph({
     children:[ new TextRun({ text:`교보문고 · 생성일 ${fmtDate(Date.now())} · 총 ${entries.length}건`, size:20, color:'6E6E73' }) ],
     border:{ bottom:{ color:'007AFF', space:8, style:BorderStyle.SINGLE, size:12 } },
@@ -1865,7 +1865,7 @@ async function exportDOCX(){
   const blob = await Packer.toBlob(doc);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `출판사_FAQ_${new Date().toISOString().slice(0,10)}.docx`;
+  a.href = url; a.download = `업무_FAQ_${new Date().toISOString().slice(0,10)}.docx`;
   a.click();
   URL.revokeObjectURL(url);
   showToast('DOCX 파일이 다운로드되었습니다');
